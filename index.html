@@ -206,7 +206,7 @@ function isCollective(date) {
 // Dohvati sve unose iz Google Sheeta
 async function getLeaveEntries() {
   const res = await fetch(SHEET_API_URL);
-  const data = await res.json();
+  const data = JSON.parse(await res.text()); // <-- koristi .text() i onda JSON.parse
   // Prvi red su zaglavlja, ostalo su podaci
   return data.slice(1).map(row => ({ date: row[0], member: row[1] }));
 }
