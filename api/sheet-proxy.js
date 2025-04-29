@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwMawn8ty1IABZvDaDHfS3JK-nGW8ki0JaDlTzVwX25YM3c6HYLfqKT1893kqgXnVRX/exec";
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwQLgjZQfdX9juNavg7zanh6735nS67Lv8OoCY-IMMAdbFxz4V72HC8fnBMq8p1gMNH/exec";
 
   if (req.method === "POST" && req.body.action === "delete") {
     const response = await fetch(SHEET_API_URL + "?action=delete", {
