@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwF4HrO5Z9EM5x9WeigxqnbduG09pfWD0EBjyuXXXdsUBP2eRWnNkwQfwuvmiaZJP6h/exec";
+  const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbw9ZVfZ5rnTv3R2iiVos7cKG0Qya6iyu8xNTpev8bU-YimlqWkqt9TW0rKV2XAvIC_8/exec";
 
   if (req.method === "POST") {
     const response = await fetch(SHEET_API_URL, {
