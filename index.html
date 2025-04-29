@@ -281,7 +281,7 @@ async function renderCalendar(month, year, containerId) {
       const entriesForDate = entries.filter(e => e.date === dateStr);
       if (entriesForDate.length > 0) {
         entriesForDate.forEach(e => {
-          td.innerHTML += `<div class="entry">${e.member}</div>`;
+          td.innerHTML += `<div class="entry">${e.member} <span class="delete-btn" data-date="${e.date}" data-member="${e.member}" style="color:red;cursor:pointer;">✖</span></div>`;
         });
       } else {
         td.innerHTML += `<div class="free">Slobodno</div>`;
@@ -334,6 +334,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   // Dohvati sve postojeće unose
   const allEntries = await getLeaveEntries();
   let fullDates = [];
+  let duplicateEntries = [];
 
   let d = new Date(start);
   while (d <= end) {
@@ -346,15 +347,26 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
         for (const member of members) {
           if (!entriesForDate.some(e => e.member === member)) {
             await addLeaveEntry(dateStr, member);
+          } else {
+            duplicateEntries.push(`${member} (${dateStr})`);
           }
         }
       }
     }
     d.setDate(d.getDate() + 1);
   }
-  alert("Unos je uspješno spremljen!"); // <-- Dodaj ovu liniju
+
+  alert("Unos je uspješno spremljen!");
+
   await refreshCalendars();
   document.getElementById('leaveForm').reset();
+
+  if (duplicateEntries.length > 0) {
+    alert(
+      'Sljedeće osobe su već upisane za te datume i nisu ponovno dodane:\n' +
+      duplicateEntries.join('\n')
+    );
+  }
 
   if (fullDates.length > 0) {
     alert(
@@ -374,6 +386,23 @@ document.getElementById('resetBtn').onclick = function() {
 
 // Prvo renderiranje
 refreshCalendars();
+
+document.addEventListener('click', async function(e) {
+  if (e.target.classList.contains('delete-btn')) {
+    if (confirm('Želiš li obrisati ovaj unos?')) {
+      await fetch(SHEET_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date: e.target.dataset.date,
+          member: e.target.dataset.member,
+          action: 'delete'
+        })
+      });
+      await refreshCalendars();
+    }
+  }
+});
 </script>
 </body>
 </html>
