@@ -206,9 +206,24 @@ function isCollective(date) {
 // Dohvati sve unose iz Google Sheeta
 async function getLeaveEntries() {
   const res = await fetch(SHEET_API_URL);
-  const data = JSON.parse(await res.text()); // <-- koristi .text() i onda JSON.parse
+  const data = JSON.parse(await res.text());
   // Prvi red su zaglavlja, ostalo su podaci
-  return data.slice(1).map(row => ({ date: row[0], member: row[1] }));
+  return data.slice(1).map(row => {
+    // Normaliziraj datum
+    let date = row[0];
+    if (date && date.length === 10 && date[4] === '-' && date[7] === '-') {
+      // već je u formatu YYYY-MM-DD
+      return { date: date, member: row[1] };
+    }
+    // pokušaj parsirati i pretvoriti u YYYY-MM-DD
+    let d = new Date(date);
+    if (!isNaN(d)) {
+      let mm = String(d.getMonth() + 1).padStart(2, '0');
+      let dd = String(d.getDate()).padStart(2, '0');
+      return { date: `${d.getFullYear()}-${mm}-${dd}`, member: row[1] };
+    }
+    return { date: date, member: row[1] };
+  });
 }
 
 // Dodaj unos u Google Sheet
@@ -228,6 +243,7 @@ async function renderCalendar(month, year, containerId) {
   container.innerHTML = '';
 
   const entries = await getLeaveEntries();
+  console.log('entries', entries);
 
   // Tablica
   const table = document.createElement('table');
@@ -336,7 +352,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
     }
     d.setDate(d.getDate() + 1);
   }
-
+  alert("Unos je uspješno spremljen!"); // <-- Dodaj ovu liniju
   await refreshCalendars();
   document.getElementById('leaveForm').reset();
 
