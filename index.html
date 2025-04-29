@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <title>Kalendar Godišnjih 2025</title>
+  <style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7fa; }
+  h2 { margin-top: 32px; }
+  .calendar-wrap { margin-bottom: 32px; display: flex; flex-direction: column; align-items: center; }
+  .calendar-table {
+    border-collapse: collapse;
+    margin-bottom: 8px;
+    background: #fff;
+    box-shadow: 0 2px 8px #0001;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 80vw;
+    max-width: 1600px;
+    min-width: 900px;
+  }
+  .calendar-table th, .calendar-table td {
+    width: 11vw;
+    min-width: 100px;
+    max-width: 200px;
+    height: 90px;
+    text-align: center;
+    vertical-align: top;
+    border: 1px solid #e0e0e0;
+    font-size: 22px;
+    padding: 8px 6px;
+    position: relative;
+  }
+  .calendar-table th {
+    background: #f0f0f8;
+    font-weight: bold;
+    color: #444;
+    height: 40px;
+    border-bottom: 2px solid #b0b0c0;
+    font-size: 20px;
+  }
+  .disabled {
+    background: #f3f3f3;
+    color: #bbb;
+  }
+  .collective {
+    background: #ffeaea;
+    color: #a00;
+    font-weight: bold;
+  }
+  .entry {
+    background: #e3f6e3;
+    color: #217821;
+    border-radius: 4px;
+    margin: 4px 0;
+    font-size: 18px;
+    padding: 2px 4px;
+    display: inline-block;
+  }
+  .free {
+    color: #bbb;
+    font-size: 18px;
+    margin-top: 8px;
+    display: block;
+  }
+  .form-section {
+    margin: 40px auto 0 auto;
+    background: #fff;
+    padding: 32px 36px 24px 36px;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px #0002;
+    max-width: 520px;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .form-section h3 {
+    margin-bottom: 18px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #1976d2;
+  }
+  .form-section form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  .form-section label {
+    margin-bottom: 12px;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-section input[type="date"], .form-section select {
+    padding: 10px 12px;
+    font-size: 17px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-right: 0;
+    margin-bottom: 0;
+  }
+  .form-section .checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin: 10px 0 18px 0;
+    justify-content: center;
+  }
+  .form-section .checkbox-group label {
+    margin-bottom: 0;
+    font-size: 16px;
+    gap: 4px;
+  }
+  .form-section button[type="submit"] {
+    padding: 10px 28px;
+    font-size: 18px;
+    border-radius: 4px;
+    border: none;
+    background: #1976d2;
+    color: #fff;
+    cursor: pointer;
+    margin-bottom: 10px;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  .form-section button[type="submit"]:hover {
+    background: #1251a3;
+  }
+  #resetBtn {
+    background: #e53935;
+    margin-left: 0;
+    margin-top: 8px;
+    padding: 8px 18px;
+    font-size: 16px;
+    border-radius: 4px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #resetBtn:hover {
+    background: #b71c1c;
+  }
+  @media (max-width: 1200px) {
+    .calendar-table { min-width: 0; width: 98vw; }
+    .calendar-table th, .calendar-table td { font-size: 13px; min-width: 40px; }
+    .form-section { max-width: 98vw; font-size: 15px; }
+    input[type="date"], select, button { font-size: 13px; }
+  }
+  </style>
+</head>
+<body>
+  <div class="calendar-wrap">
+    <h2>Srpanj 2025</h2>
+    <div id="july"></div>
+  </div>
+  <div class="calendar-wrap">
+    <h2>Kolovoz 2025</h2>
+    <div id="august"></div>
+  </div>
+
+  <div class="form-section">
+  <h3>Unesi godišnji</h3>
+  <form id="leaveForm">
+    <label>
+      Od datuma:
+      <input type="date" id="dateFrom" min="2025-07-01" max="2025-08-31" required>
+    </label>
+    <label>
+      Do datuma:
+      <input type="date" id="dateTo" min="2025-07-01" max="2025-08-31" required>
+    </label>
+    <div class="checkbox-group">
+      <span style="width:100%;text-align:center;font-weight:500;">Osobe:</span>
+      <label><input type="checkbox" class="memberCheck" value="HP"> HP</label>
+      <label><input type="checkbox" class="memberCheck" value="HT"> HT</label>
+      <label><input type="checkbox" class="memberCheck" value="Katarina D."> Katarina D.</label>
+      <label><input type="checkbox" class="memberCheck" value="Lucija Ž"> Lucija Ž</label>
+      <label><input type="checkbox" class="memberCheck" value="DJ"> DJ</label>
+      <label><input type="checkbox" class="memberCheck" value="Ivan K"> Ivan K</label>
+      <label><input type="checkbox" class="memberCheck" value="Ivana Paranus"> Ivana Paranus</label>
+    </div>
+    <button type="submit">Dodaj</button>
+  </form>
+  <button id="resetBtn">Obriši sve unose</button>
+</div>
+
+<script>
+const SHEET_API_URL = 'https://tvoj-proxy.vercel.app/api/sheet-proxy';
+const teamMembers = [
+  'HP', 'HT', 'Katarina D.', 'Lucija Ž', 'DJ', 'Ivan K', 'Ivana Paranus'
+];
+const COLLECTIVE_DAYS = ['2025-08-04', '2025-08-05', '2025-08-15'];
+const WEEKDAYS = ['P', 'U', 'S', 'Č', 'P', 'S', 'N'];
+
+function isWeekend(date) {
+  const d = new Date(date);
+  return d.getDay() === 0 || d.getDay() === 6;
+}
+function isCollective(date) {
+  return COLLECTIVE_DAYS.includes(date);
+}
+
+// Dohvati sve unose iz Google Sheeta
+async function getLeaveEntries() {
+  const res = await fetch(SHEET_API_URL);
+  const data = await res.json();
+  // Prvi red su zaglavlja, ostalo su podaci
+  return data.slice(1).map(row => ({ date: row[0], member: row[1] }));
+}
+
+// Dodaj unos u Google Sheet
+async function addLeaveEntry(date, member) {
+  await fetch(SHEET_API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ date, member }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+}
+
+// Prikaz kalendara
+async function renderCalendar(month, year, containerId) {
+  const days = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+
+  const entries = await getLeaveEntries();
+
+  // Tablica
+  const table = document.createElement('table');
+  table.className = 'calendar-table';
+
+  // Header s danima u tjednu
+  const thead = document.createElement('thead');
+  const trHead = document.createElement('tr');
+  for (let i = 0; i < 7; i++) {
+    const th = document.createElement('th');
+    th.textContent = WEEKDAYS[i];
+    trHead.appendChild(th);
+  }
+  thead.appendChild(trHead);
+  table.appendChild(thead);
+
+  // Tijelo tablice
+  const tbody = document.createElement('tbody');
+  let tr = document.createElement('tr');
+  let dayOfWeek = (firstDay + 6) % 7; // Ponedjeljak = 0
+  for (let i = 0; i < dayOfWeek; i++) {
+    tr.appendChild(document.createElement('td'));
+  }
+  for (let day = 1; day <= days; day++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const td = document.createElement('td');
+    td.innerHTML = `<div>${day}</div>`;
+    if (isWeekend(dateStr)) td.classList.add('disabled');
+    if (isCollective(dateStr)) td.classList.add('collective');
+    if (isWeekend(dateStr)) {
+      td.innerHTML += `<div style="font-size:12px;">Vikend</div>`;
+    } else if (isCollective(dateStr)) {
+      td.innerHTML += `<div style="font-size:12px;">Kolektivni</div>`;
+    } else {
+      const entriesForDate = entries.filter(e => e.date === dateStr);
+      if (entriesForDate.length > 0) {
+        entriesForDate.forEach(e => {
+          td.innerHTML += `<div class="entry">${e.member}</div>`;
+        });
+      } else {
+        td.innerHTML += `<div class="free">Slobodno</div>`;
+      }
+    }
+    tr.appendChild(td);
+    dayOfWeek++;
+    if (dayOfWeek === 7) {
+      tbody.appendChild(tr);
+      tr = document.createElement('tr');
+      dayOfWeek = 0;
+    }
+  }
+  if (dayOfWeek !== 0) {
+    for (let i = dayOfWeek; i < 7; i++) {
+      tr.appendChild(document.createElement('td'));
+    }
+    tbody.appendChild(tr);
+  }
+  table.appendChild(tbody);
+  container.appendChild(table);
+}
+
+// Osvježi oba kalendara
+async function refreshCalendars() {
+  await renderCalendar(6, 2025, 'july');
+  await renderCalendar(7, 2025, 'august');
+}
+
+document.getElementById('leaveForm').onsubmit = async function(e) {
+  e.preventDefault();
+  const dateFrom = document.getElementById('dateFrom').value;
+  const dateTo = document.getElementById('dateTo').value;
+  const checkboxes = document.querySelectorAll('.memberCheck:checked');
+  const members = Array.from(checkboxes).map(cb => cb.value);
+
+  if (!dateFrom || !dateTo || members.length === 0) {
+    alert('Odaberi raspon datuma i barem jednu osobu!');
+    return;
+  }
+
+  const start = new Date(dateFrom);
+  const end = new Date(dateTo);
+
+  if (end < start) {
+    alert('Završni datum mora biti nakon početnog!');
+    return;
+  }
+
+  // Dohvati sve postojeće unose
+  const allEntries = await getLeaveEntries();
+  let fullDates = [];
+
+  let d = new Date(start);
+  while (d <= end) {
+    const dateStr = d.toISOString().slice(0, 10);
+    if (!isWeekend(dateStr) && !isCollective(dateStr)) {
+      let entriesForDate = allEntries.filter(e => e.date === dateStr);
+      if (entriesForDate.length + members.length > 3) {
+        fullDates.push(dateStr);
+      } else {
+        for (const member of members) {
+          if (!entriesForDate.some(e => e.member === member)) {
+            await addLeaveEntry(dateStr, member);
+          }
+        }
+      }
+    }
+    d.setDate(d.getDate() + 1);
+  }
+
+  await refreshCalendars();
+  document.getElementById('leaveForm').reset();
+
+  if (fullDates.length > 0) {
+    alert(
+      'Za sljedeće datume nije moguće dodati više osoba (maksimalno 3 po danu):\n' +
+      fullDates.map(d => {
+        const [y, m, day] = d.split('-');
+        return `Dan ${day}.${m}.${y}. je već zauzet sa previše osoba, odaberi druge datume.`;
+      }).join('\n')
+    );
+  }
+};
+
+// Brisanje svih unosa (ručno u Sheetu ili dodatnim Apps Scriptom)
+document.getElementById('resetBtn').onclick = function() {
+  alert('Za brisanje svih unosa, obrišite ih ručno u Google Sheetu (ili dodajte posebnu funkciju u Apps Script).');
+};
+
+// Prvo renderiranje
+refreshCalendars();
+</script>
+</body>
+</html>
