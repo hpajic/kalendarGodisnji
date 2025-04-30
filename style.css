@@ -1,5 +1,4 @@
-
- body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7fa; }
+body { font-family: Arial, sans-serif; margin: 20px; background: #f7f7fa; }
   h2 { margin-top: 32px; }
   .calendar-wrap { margin-bottom: 32px; display: flex; flex-direction: column; align-items: center; }
   .calendar-table {
@@ -144,3 +143,32 @@
     .form-section { max-width: 98vw; font-size: 15px; }
     input[type="date"], select, button { font-size: 13px; }
   }
+  .slider-arrow {
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 8px;
+}
+.slider-arrow:hover, .slider-arrow:focus {
+  background: #1565c0;
+  transform: scale(1.1);
+  outline: none;
+}
+.calendar-slider {
+  margin-bottom: 20px;
+}
+#calendarTitle {
+  min-width: 160px;
+  text-align: center;
+  display: inline-block;
+}

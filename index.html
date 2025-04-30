@@ -15,12 +15,16 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
-  <div class="calendar-slider">
-  <button id="prevMonth" style="font-size:24px;">&#8592;</button>
-  <span id="calendarTitle" style="font-size:20px;margin:0 20px;"></span>
-  <button id="nextMonth" style="font-size:24px;">&#8594;</button>
+  <div class="calendar-slider" style="display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+  <button id="prevMonth" class="slider-arrow" aria-label="Prethodni mjesec">
+    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;"><polyline points="18 24 8 14 18 4"/></svg>
+  </button>
+  <span id="calendarTitle" style="font-size:22px;font-weight:600;margin:0 24px;min-width:160px;text-align:center;display:inline-block;"></span>
+  <button id="nextMonth" class="slider-arrow" aria-label="Sljedeći mjesec">
+    <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;"><polyline points="10 4 20 14 10 24"/></svg>
+  </button>
 </div>
-<div id="calendarContainer"></div>
+<div id="calendarContainer" style="display:flex;justify-content:center;"></div>
 
   <div class="form-section">
   <h3>Unesi godišnji</h3>
