@@ -122,11 +122,28 @@ async function renderCalendar(month, year, containerId) {
   container.appendChild(table);
 }
 
+async function renderSummary() {
+  const entries = await getLeaveEntries();
+  const summary = {};
+  teamMembers.forEach(m => summary[m] = 0);
+  entries.forEach(e => {
+    if (teamMembers.includes(e.member)) summary[e.member]++;
+  });
+
+  let html = '<h3>Broj zauzetih dana po osobi</h3><ul style="list-style:none;padding:0;">';
+  Object.entries(summary).forEach(([member, count]) => {
+    html += `<li><b>${member}:</b> ${count} dan(a)</li>`;
+  });
+  html += '</ul>';
+  document.getElementById('summary').innerHTML = html;
+}
+
 // Osvježi oba kalendara
 async function refreshCalendars() {
   showLoader();
   await renderCalendar(6, 2025, 'july');
   await renderCalendar(7, 2025, 'august');
+  await renderSummary();
   hideLoader();
 }
 
@@ -235,27 +252,30 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
-// Brisanje svih unosa (ručno u Sheetu ili dodatnim Apps Scriptom)
-document.getElementById('resetBtn').onclick = async function() {
-  if (confirm('Želiš li obrisati SVE unose?')) {
-    showLoader();
-    await fetch(SHEET_API_URL, { method: 'DELETE' });
-    await refreshCalendars();
-    hideLoader();
-    alert('Svi unosi su obrisani!');
-  }
-};
-
-// Prvo renderiranje
-refreshCalendars();
-
-document.addEventListener('click', async function(e) {
-  if (e.target.classList.contains('delete-btn')) {
+document.addEventListener('click', async function(e) {eetu ili dodatnim Apps Scriptom)
+  if (e.target.classList.contains('delete-btn')) {('resetBtn').onclick = async function() {
     if (confirm('Želiš li obrisati ovaj unos?')) {
       await fetch(SHEET_API_URL, {
-        method: 'POST',
+        method: 'POST',d: 'DELETE' });
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          date: e.target.dataset.date,'Svi unosi su obrisani!');
+          member: e.target.dataset.member,
+          action: 'delete'
+        })
+      });Prvo renderiranje
+      await refreshCalendars();reshCalendars();
+    }
+  }ck', async function(e) {
+});ins('delete-btn')) {
+ti ovaj unos?')) {
+$(document).ready(function() { await fetch(SHEET_API_URL, {
+  $('#memberSelect').select2({     method: 'POST',
+    placeholder: "Odaberi osobe"        headers: { 'Content-Type': 'application/json' },
+
+
+
+});  });        body: JSON.stringify({
           date: e.target.dataset.date,
           member: e.target.dataset.member,
           action: 'delete'
