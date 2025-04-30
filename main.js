@@ -42,24 +42,7 @@ async function getLeaveEntries() {
     return { date: date, member: row[1] };
   });
 }
-// Dodaj na početak main.js (ili nakon što se DOM učita)
-flatpickr("#dateRange", {
-  mode: "range",
-  dateFormat: "Y-m-d",
-  minDate: "2025-07-01",
-  maxDate: "2025-08-31",
-  locale: {
-    firstDayOfWeek: 1,
-    weekdays: {
-      shorthand: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'],
-      longhand: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota']
-    },
-    months: {
-      shorthand: ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'],
-      longhand: ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac']
-    }
-  }
-});
+
 
 // Dodaj unos u Google Sheet
 async function addLeaveEntry(date, member) {
@@ -217,7 +200,25 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
     );
   }
 };
-
+document.addEventListener('DOMContentLoaded', function() {
+  flatpickr("#dateRange", {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    minDate: "2025-07-01",
+    maxDate: "2025-08-31",
+    locale: {
+      firstDayOfWeek: 1,
+      weekdays: {
+        shorthand: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'],
+        longhand: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota']
+      },
+      months: {
+        shorthand: ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'],
+        longhand: ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac']
+      }
+    }
+  });
+});
 // Brisanje svih unosa (ručno u Sheetu ili dodatnim Apps Scriptom)
 document.getElementById('resetBtn').onclick = async function() {
   if (confirm('Želiš li obrisati SVE unose?')) {
