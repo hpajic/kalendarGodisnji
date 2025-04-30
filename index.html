@@ -150,6 +150,11 @@
     input[type="date"], select, button { font-size: 13px; }
   }
   </style>
+  <!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
   <div class="calendar-wrap">
@@ -172,16 +177,16 @@
       Do datuma:
       <input type="date" id="dateTo" min="2025-07-01" max="2025-08-31" required>
     </label>
-    <div class="checkbox-group">
-      <span style="width:100%;text-align:center;font-weight:500;">Osobe:</span>
-      <label><input type="checkbox" class="memberCheck" value="HP"> HP</label>
-      <label><input type="checkbox" class="memberCheck" value="HT"> HT</label>
-      <label><input type="checkbox" class="memberCheck" value="Katarina D."> Katarina D.</label>
-      <label><input type="checkbox" class="memberCheck" value="Lucija Ž"> Lucija Ž</label>
-      <label><input type="checkbox" class="memberCheck" value="DJ"> DJ</label>
-      <label><input type="checkbox" class="memberCheck" value="Ivan K"> Ivan K</label>
-      <label><input type="checkbox" class="memberCheck" value="Ivana Paranus"> Ivana Paranus</label>
-    </div>
+    <label for="memberSelect" style="width:100%;text-align:center;font-weight:500;">Osobe:</label>
+<select id="memberSelect" name="members" multiple="multiple" style="width:100%;">
+  <option value="HP">HP</option>
+  <option value="HT">HT</option>
+  <option value="Katarina D.">Katarina D.</option>
+  <option value="Lucija Ž">Lucija Ž</option>
+  <option value="DJ">DJ</option>
+  <option value="Ivan K">Ivan K</option>
+  <option value="Ivana Paranus">Ivana Paranus</option>
+</select>
     <button type="submit">Dodaj</button>
   </form>
   <button id="resetBtn">Obriši sve unose</button>
@@ -326,8 +331,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   e.preventDefault();
   const dateFrom = document.getElementById('dateFrom').value;
   const dateTo = document.getElementById('dateTo').value;
-  const checkboxes = document.querySelectorAll('.memberCheck:checked');
-  const members = Array.from(checkboxes).map(cb => cb.value);
+  const members = $('#memberSelect').val();
 
   if (!dateFrom || !dateTo || members.length === 0) {
     alert('Odaberi raspon datuma i barem jednu osobu!');
@@ -422,6 +426,12 @@ document.addEventListener('click', async function(e) {
       await refreshCalendars();
     }
   }
+});
+
+$(document).ready(function() {
+  $('#memberSelect').select2({
+    placeholder: "Odaberi osobe"
+  });
 });
 </script>
 </body>
