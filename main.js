@@ -19,6 +19,31 @@ function hideLoader() {
   document.getElementById('loader').style.display = 'none';
 }
 
+function showToast(message, type = "success") {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.position = 'fixed';
+    toast.style.bottom = '30px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.zIndex = 9999;
+    toast.style.minWidth = '200px';
+    toast.style.padding = '16px 32px';
+    toast.style.borderRadius = '8px';
+    toast.style.fontSize = '18px';
+    toast.style.color = '#fff';
+    toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+    toast.style.textAlign = 'center';
+    document.body.appendChild(toast);
+  }
+  toast.style.background = type === "success" ? "#43a047" : "#d32f2f";
+  toast.textContent = message;
+  toast.style.display = 'block';
+  setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
 // Dohvati sve unose iz baze
 async function getLeaveEntries() {
   const res = await fetch(SHEET_API_URL);
@@ -160,7 +185,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   const members = $('#memberSelect').val();
 
   if (!dateFrom || !dateTo || members.length === 0) {
-    alert('Odaberi raspon datuma i barem jednu osobu!');
+    showToast('Odaberi raspon datuma i barem jednu osobu!', "error");
     submitBtn.disabled = false;
     submitBtn.textContent = "Dodaj";
     return;
@@ -203,7 +228,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   }
 
   if (addedCount > 0) {
-    alert("Unos je uspješno spremljen!");
+    showToast("Unos je uspješno spremljen!", "success");
   }
 
   await refreshCalendars();
