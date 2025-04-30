@@ -198,6 +198,31 @@ async function refreshCalendars() {
   hideLoader();
 }
 
+const months = [
+  "Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj",
+  "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"
+];
+let currentMonth = 6; // 6 = Srpanj (0-based)
+let currentYear = 2025;
+
+async function renderSliderCalendar() {
+  document.getElementById('calendarTitle').textContent = months[currentMonth] + " " + currentYear;
+  await renderCalendar(currentMonth, currentYear, 'calendarContainer');
+}
+
+document.getElementById('prevMonth').onclick = function() {
+  if (currentMonth > 6) { // samo Srpanj i Kolovoz
+    currentMonth--;
+    renderSliderCalendar();
+  }
+};
+document.getElementById('nextMonth').onclick = function() {
+  if (currentMonth < 7) {
+    currentMonth++;
+    renderSliderCalendar();
+  }
+};
+
 // Dodavanje godišnjeg
 document.getElementById('leaveForm').onsubmit = async function(e) {
   e.preventDefault();
@@ -346,7 +371,7 @@ $(document).ready(function() {
 });
 
 // Prvo renderiranje
-refreshCalendars();
+renderSliderCalendar();
 
 document.getElementById('exportCsvBtn').onclick = async function() {
   const entries = await getLeaveEntries();
