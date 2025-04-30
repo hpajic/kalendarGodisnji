@@ -44,6 +44,33 @@ function showToast(message, type = "success") {
   setTimeout(() => { toast.style.display = 'none'; }, 3000);
 }
 
+function showConfirmToast(message, onYes) {
+  const toast = document.getElementById('confirm-toast');
+  document.getElementById('confirm-toast-message').textContent = message;
+  toast.style.display = 'block';
+  toast.style.background = '#d32f2f';
+
+  function cleanup() {
+    toast.style.display = 'none';
+    yesBtn.removeEventListener('click', yesHandler);
+    noBtn.removeEventListener('click', noHandler);
+  }
+
+  const yesBtn = document.getElementById('confirm-yes');
+  const noBtn = document.getElementById('confirm-no');
+
+  function yesHandler() {
+    cleanup();
+    onYes();
+  }
+  function noHandler() {
+    cleanup();
+  }
+
+  yesBtn.addEventListener('click', yesHandler);
+  noBtn.addEventListener('click', noHandler);
+}
+
 // Dohvati sve unose iz baze
 async function getLeaveEntries() {
   const res = await fetch(SHEET_API_URL);
@@ -283,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Brisanje pojedinačnog unosa
 document.addEventListener('click', async function(e) {
   if (e.target.classList.contains('delete-btn')) {
-    if (confirm('Želiš li obrisati ovaj unos?')) {
+    showConfirmToast('Želiš li obrisati ovaj unos?', async () => {
       await fetch(SHEET_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -294,7 +321,7 @@ document.addEventListener('click', async function(e) {
         })
       });
       await refreshCalendars();
-    }
+    });
   }
 });
 
