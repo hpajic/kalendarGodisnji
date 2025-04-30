@@ -1,4 +1,3 @@
-
 const SHEET_API_URL = 'https://kalendar-godisnji.vercel.app/api/sheet-proxy';
 const teamMembers = [
   'HP', 'HT', 'Katarina D.', 'Lucija Ž', 'DJ', 'Ivan K', 'Ivana Paranus'
@@ -133,12 +132,18 @@ async function refreshCalendars() {
 
 document.getElementById('leaveForm').onsubmit = async function(e) {
   e.preventDefault();
+  const submitBtn = this.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Spremam...";
+
   const dateRange = document.getElementById('dateRange').value;
   const [dateFrom, dateTo] = dateRange.split(" to ");
   const members = $('#memberSelect').val();
 
   if (!dateFrom || !dateTo || members.length === 0) {
     alert('Odaberi raspon datuma i barem jednu osobu!');
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Dodaj";
     return;
   }
 
@@ -147,6 +152,8 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
 
   if (end < start) {
     alert('Završni datum mora biti nakon početnog!');
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Dodaj";
     return;
   }
 
@@ -181,7 +188,14 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   }
 
   await refreshCalendars();
-  document.getElementById('leaveForm').reset();
+  this.reset();
+
+  // Reset Select2 i flatpickr
+  $('#memberSelect').val(null).trigger('change');
+  document.getElementById('dateRange')._flatpickr.clear();
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Dodaj";
 
   if (duplicateEntries.length > 0) {
     alert(
