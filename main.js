@@ -293,3 +293,22 @@ $(document).ready(function() {
 
 // Prvo renderiranje
 refreshCalendars();
+
+document.getElementById('exportCsvBtn').onclick = async function() {
+  const entries = await getLeaveEntries();
+  let csv = "Datum,Osoba\n";
+  entries.forEach(e => {
+    csv += `${e.date},${e.member}\n`;
+  });
+
+  // Kreiraj blob i preuzmi
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'godisnji.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
