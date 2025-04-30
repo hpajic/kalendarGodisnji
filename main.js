@@ -137,7 +137,9 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   submitBtn.textContent = "Spremam...";
 
   const dateRange = document.getElementById('dateRange').value;
-  const [dateFrom, dateTo] = dateRange.split(" to ");
+  let [dateFrom, dateTo] = dateRange.split(" to ");
+  if (!dateTo) dateTo = dateFrom; // Ako je odabran samo jedan dan, koristi isti datum za početak i kraj
+
   const members = $('#memberSelect').val();
 
   if (!dateFrom || !dateTo || members.length === 0) {
