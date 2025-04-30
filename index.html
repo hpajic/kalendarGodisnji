@@ -186,6 +186,9 @@
   </form>
   <button id="resetBtn">Obriši sve unose</button>
 </div>
+<div id="loader" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(255,255,255,0.7);align-items:center;justify-content:center;">
+  <div style="font-size:32px;color:#1976d2;">Učitavanje...</div>
+</div>
 
 <script>
 const SHEET_API_URL = 'https://kalendar-godisnji.vercel.app/api/sheet-proxy';
@@ -201,6 +204,12 @@ function isWeekend(date) {
 }
 function isCollective(date) {
   return COLLECTIVE_DAYS.includes(date);
+}
+function showLoader() {
+  document.getElementById('loader').style.display = 'flex';
+}
+function hideLoader() {
+  document.getElementById('loader').style.display = 'none';
 }
 
 // Dohvati sve unose iz Google Sheeta
@@ -307,8 +316,10 @@ async function renderCalendar(month, year, containerId) {
 
 // Osvježi oba kalendara
 async function refreshCalendars() {
+  showLoader();
   await renderCalendar(6, 2025, 'july');
   await renderCalendar(7, 2025, 'august');
+  hideLoader();
 }
 
 document.getElementById('leaveForm').onsubmit = async function(e) {
@@ -385,8 +396,10 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
 // Brisanje svih unosa (ručno u Sheetu ili dodatnim Apps Scriptom)
 document.getElementById('resetBtn').onclick = async function() {
   if (confirm('Želiš li obrisati SVE unose?')) {
+    showLoader();
     await fetch(SHEET_API_URL, { method: 'DELETE' });
     await refreshCalendars();
+    hideLoader();
     alert('Svi unosi su obrisani!');
   }
 };
