@@ -189,15 +189,7 @@ async function renderSummary() {
   document.getElementById('summary').innerHTML = html;
 }
 
-// Osvježi oba kalendara i summary
-async function refreshCalendars() {
-  showLoader();
-  await renderCalendar(6, 2025, 'july');
-  await renderCalendar(7, 2025, 'august');
-  await renderSummary();
-  hideLoader();
-}
-
+// Slider logika
 const months = [
   "Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj",
   "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"
@@ -208,6 +200,7 @@ let currentYear = 2025;
 async function renderSliderCalendar() {
   document.getElementById('calendarTitle').textContent = months[currentMonth] + " " + currentYear;
   await renderCalendar(currentMonth, currentYear, 'calendarContainer');
+  await renderSummary();
 }
 
 document.getElementById('prevMonth').onclick = function() {
@@ -247,7 +240,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   const end = new Date(dateTo);
 
   if (end < start) {
-    alert('Završni datum mora biti nakon početnog!');
+    showToast('Završni datum mora biti nakon početnog!', "error");
     submitBtn.disabled = false;
     submitBtn.textContent = "Dodaj";
     return;
@@ -283,7 +276,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
     showToast("Unos je uspješno spremljen!", "success");
   }
 
-  await refreshCalendars();
+  await renderSliderCalendar();
   this.reset();
 
   // Reset Select2 i flatpickr
@@ -294,19 +287,21 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   submitBtn.textContent = "Dodaj";
 
   if (duplicateEntries.length > 0) {
-    alert(
+    showToast(
       'Sljedeće osobe su već upisane za te datume i nisu ponovno dodane:\n' +
-      duplicateEntries.join('\n')
+      duplicateEntries.join('\n'),
+      "error"
     );
   }
 
   if (fullDates.length > 0) {
-    alert(
+    showToast(
       'Za sljedeće datume nije moguće dodati više osoba (maksimalno 3 po danu):\n' +
       fullDates.map(d => {
         const [y, m, day] = d.split('-');
         return `Dan ${day}.${m}.${y}. je već zauzet sa previše osoba, odaberi druge datume.`;
-      }).join('\n')
+      }).join('\n'),
+      "error"
     );
   }
 };
@@ -345,20 +340,21 @@ document.addEventListener('click', async function(e) {
           action: 'delete'
         })
       });
-      await refreshCalendars();
+      await renderSliderCalendar();
+      showToast('Unos je obrisan!', 'success');
     });
   }
 });
 
 // Brisanje svih unosa
-document.getElementById('resetBtn').onclick = async function() {
-  if (confirm('Želiš li obrisati SVE unose?')) {
+document.getElementById('resetBtn').onclick = function() {
+  showConfirmToast('Želiš li obrisati SVE unose?', async () => {
     showLoader();
     await fetch(SHEET_API_URL, { method: 'DELETE' });
-    await refreshCalendars();
+    await renderSliderCalendar();
     hideLoader();
-    alert('Svi unosi su obrisani!');
-  }
+    showToast('Svi unosi su obrisani!', 'success');
+  });
 };
 
 // Inicijalizacija Select2
