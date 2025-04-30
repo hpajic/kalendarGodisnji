@@ -19,7 +19,7 @@ function hideLoader() {
   document.getElementById('loader').style.display = 'none';
 }
 
-// Dohvati sve unose iz Google Sheeta
+// Dohvati sve unose iz baze
 async function getLeaveEntries() {
   const res = await fetch(SHEET_API_URL);
   const data = JSON.parse(await res.text());
@@ -42,8 +42,7 @@ async function getLeaveEntries() {
   });
 }
 
-
-// Dodaj unos u Google Sheet
+// Dodaj unos
 async function addLeaveEntry(date, member) {
   await fetch(SHEET_API_URL, {
     method: 'POST',
@@ -60,7 +59,6 @@ async function renderCalendar(month, year, containerId) {
   container.innerHTML = '';
 
   const entries = await getLeaveEntries();
-  console.log('entries', entries);
 
   // Tablica
   const table = document.createElement('table');
@@ -122,6 +120,7 @@ async function renderCalendar(month, year, containerId) {
   container.appendChild(table);
 }
 
+// Prikaz broja dana po osobi
 async function renderSummary() {
   const entries = await getLeaveEntries();
   const summary = {};
@@ -138,7 +137,7 @@ async function renderSummary() {
   document.getElementById('summary').innerHTML = html;
 }
 
-// Osvježi oba kalendara
+// Osvježi oba kalendara i summary
 async function refreshCalendars() {
   showLoader();
   await renderCalendar(6, 2025, 'july');
@@ -147,6 +146,7 @@ async function refreshCalendars() {
   hideLoader();
 }
 
+// Dodavanje godišnjeg
 document.getElementById('leaveForm').onsubmit = async function(e) {
   e.preventDefault();
   const submitBtn = this.querySelector('button[type="submit"]');
@@ -155,7 +155,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
 
   const dateRange = document.getElementById('dateRange').value;
   let [dateFrom, dateTo] = dateRange.split(" to ");
-  if (!dateTo) dateTo = dateFrom; // Ako je odabran samo jedan dan, koristi isti datum za početak i kraj
+  if (!dateTo) dateTo = dateFrom; // Ako je odabran samo jedan dan
 
   const members = $('#memberSelect').val();
 
@@ -233,6 +233,8 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
     );
   }
 };
+
+// Inicijalizacija flatpickr
 document.addEventListener('DOMContentLoaded', function() {
   flatpickr("#dateRange", {
     mode: "range",
@@ -252,30 +254,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 });
-document.addEventListener('click', async function(e) {eetu ili dodatnim Apps Scriptom)
-  if (e.target.classList.contains('delete-btn')) {('resetBtn').onclick = async function() {
+
+// Brisanje pojedinačnog unosa
+document.addEventListener('click', async function(e) {
+  if (e.target.classList.contains('delete-btn')) {
     if (confirm('Želiš li obrisati ovaj unos?')) {
       await fetch(SHEET_API_URL, {
-        method: 'POST',d: 'DELETE' });
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          date: e.target.dataset.date,'Svi unosi su obrisani!');
-          member: e.target.dataset.member,
-          action: 'delete'
-        })
-      });Prvo renderiranje
-      await refreshCalendars();reshCalendars();
-    }
-  }ck', async function(e) {
-});ins('delete-btn')) {
-ti ovaj unos?')) {
-$(document).ready(function() { await fetch(SHEET_API_URL, {
-  $('#memberSelect').select2({     method: 'POST',
-    placeholder: "Odaberi osobe"        headers: { 'Content-Type': 'application/json' },
-
-
-
-});  });        body: JSON.stringify({
           date: e.target.dataset.date,
           member: e.target.dataset.member,
           action: 'delete'
@@ -286,8 +273,23 @@ $(document).ready(function() { await fetch(SHEET_API_URL, {
   }
 });
 
+// Brisanje svih unosa
+document.getElementById('resetBtn').onclick = async function() {
+  if (confirm('Želiš li obrisati SVE unose?')) {
+    showLoader();
+    await fetch(SHEET_API_URL, { method: 'DELETE' });
+    await refreshCalendars();
+    hideLoader();
+    alert('Svi unosi su obrisani!');
+  }
+};
+
+// Inicijalizacija Select2
 $(document).ready(function() {
   $('#memberSelect').select2({
     placeholder: "Odaberi osobe"
   });
 });
+
+// Prvo renderiranje
+refreshCalendars();
