@@ -1,31 +1,35 @@
-export default async function handler(req, res) {
-  const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbw9ZVfZ5rnTv3R2iiVos7cKG0Qya6iyu8xNTpev8bU-YimlqWkqt9TW0rKV2XAvIC_8/exec";
+import { Pool } from 'pg';
 
-  if (req.method === "POST") {
-    const response = await fetch(SHEET_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(req.body),
-    });
-    const data = await response.text();
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.status(200).send(data);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
+
+export default async function handler(req, res) {
+  if (req.method === 'POST') {
+    const { date, member, action } = req.body;
+    if (action === 'delete') {
+      await pool.query('DELETE FROM godisnji WHERE datum = $1 AND osoba = $2', [date, member]);
+      res.status(200).json({ status: 'DELETED' });
+      return;
+    }
+    try {
+      await pool.query(
+        'INSERT INTO godisnji (datum, osoba) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [date, member]
+      );
+      res.status(200).json({ status: 'OK' });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
     return;
   }
-  if (req.method === "GET") {
-    const response = await fetch(SHEET_API_URL);
-    const data = await response.text();
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.status(200).send(data);
+  if (req.method === 'GET') {
+    const result = await pool.query('SELECT datum, osoba FROM godisnji');
+    // Formatiraj podatke kao što frontend očekuje (array of arrays, prvi red su zaglavlja)
+    const rows = result.rows.map(r => [r.datum.toISOString().slice(0, 10), r.osoba]);
+    res.status(200).json([["Datum", "Osoba"], ...rows]);
     return;
   }
-  if (req.method === "OPTIONS") {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-    res.status(200).end();
-    return;
-  }
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.status(405).send("Method Not Allowed");
+  res.status(405).end();
 }
