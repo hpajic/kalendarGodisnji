@@ -42,6 +42,24 @@ async function getLeaveEntries() {
     return { date: date, member: row[1] };
   });
 }
+// Dodaj na početak main.js (ili nakon što se DOM učita)
+flatpickr("#dateRange", {
+  mode: "range",
+  dateFormat: "Y-m-d",
+  minDate: "2025-07-01",
+  maxDate: "2025-08-31",
+  locale: {
+    firstDayOfWeek: 1,
+    weekdays: {
+      shorthand: ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'],
+      longhand: ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota']
+    },
+    months: {
+      shorthand: ['Sij', 'Velj', 'Ožu', 'Tra', 'Svi', 'Lip', 'Srp', 'Kol', 'Ruj', 'Lis', 'Stu', 'Pro'],
+      longhand: ['Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj', 'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac']
+    }
+  }
+});
 
 // Dodaj unos u Google Sheet
 async function addLeaveEntry(date, member) {
@@ -132,8 +150,8 @@ async function refreshCalendars() {
 
 document.getElementById('leaveForm').onsubmit = async function(e) {
   e.preventDefault();
-  const dateFrom = document.getElementById('dateFrom').value;
-  const dateTo = document.getElementById('dateTo').value;
+  const dateRange = document.getElementById('dateRange').value;
+  const [dateFrom, dateTo] = dateRange.split(" to ");
   const members = $('#memberSelect').val();
 
   if (!dateFrom || !dateTo || members.length === 0) {
