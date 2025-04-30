@@ -287,7 +287,9 @@ document.getElementById('resetBtn').onclick = async function() {
 // Inicijalizacija Select2
 $(document).ready(function() {
   $('#memberSelect').select2({
-    placeholder: "Odaberi osobe"
+    placeholder: "Odaberi osobe",
+    tags: true, // omogućuje unos novih imena kao tagova
+    allowClear: true
   });
 });
 
