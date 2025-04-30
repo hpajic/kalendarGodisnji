@@ -331,12 +331,12 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
     return;
   }
 
-  // Dohvati sve postojeće unose
   const allEntries = await getLeaveEntries();
   let fullDates = [];
   let duplicateEntries = [];
+  let addedCount = 0;
 
-  let d = new Date(start);
+  let d = new Date(dateFrom);
   while (d <= end) {
     const dateStr = d.toISOString().slice(0, 10);
     if (!isWeekend(dateStr) && !isCollective(dateStr)) {
@@ -347,16 +347,19 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
         for (const member of members) {
           if (!entriesForDate.some(e => e.member === member)) {
             await addLeaveEntry(dateStr, member);
+            addedCount++;
           } else {
             duplicateEntries.push(`${member} (${dateStr})`);
           }
         }
       }
     }
-    d.setDate(d.getDate() + 1);
+    d.setUTCDate(d.getUTCDate() + 1);
   }
 
-  alert("Unos je uspješno spremljen!");
+  if (addedCount > 0) {
+    alert("Unos je uspješno spremljen!");
+  }
 
   await refreshCalendars();
   document.getElementById('leaveForm').reset();
