@@ -1,4 +1,3 @@
-
 import { Pool } from 'pg';
 
 const pool = new Pool({
@@ -25,13 +24,16 @@ export default async function handler(req, res) {
     }
     return;
   }
+  if (req.method === 'DELETE') {
+    await pool.query('DELETE FROM godisnji');
+    res.status(200).json({ status: 'ALL_DELETED' });
+    return;
+  }
   if (req.method === 'GET') {
     const result = await pool.query('SELECT datum, osoba FROM godisnji');
-    // Formatiraj podatke kao što frontend očekuje (array of arrays, prvi red su zaglavlja)
     const rows = result.rows.map(r => [r.datum.toISOString().slice(0, 10), r.osoba]);
     res.status(200).json([["Datum", "Osoba"], ...rows]);
     return;
   }
   res.status(405).end();
-
 }

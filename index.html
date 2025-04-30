@@ -383,8 +383,12 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
 };
 
 // Brisanje svih unosa (ručno u Sheetu ili dodatnim Apps Scriptom)
-document.getElementById('resetBtn').onclick = function() {
-  alert('Za brisanje svih unosa, obrišite ih ručno u Google Sheetu') ;
+document.getElementById('resetBtn').onclick = async function() {
+  if (confirm('Želiš li obrisati SVE unose?')) {
+    await fetch(SHEET_API_URL, { method: 'DELETE' });
+    await refreshCalendars();
+    alert('Svi unosi su obrisani!');
+  }
 };
 
 // Prvo renderiranje
