@@ -458,6 +458,10 @@ document.getElementById('loginBtn').onclick = async function() {
      $('#memberSelect').val([loggedInDisplayName]).trigger('change');
   }
 
+  // Prvo renderiranje
+  renderSliderCalendar();
+};
+
 document.getElementById('exportCsvBtn').onclick = async function() {
   const entries = await getLeaveEntries();
   let csv = "Datum,Osoba\n";
