@@ -1,9 +1,15 @@
 const SHEET_API_URL = 'https://kalendar-godisnji.vercel.app/api/sheet-proxy';
-const teamMembers = [
-  'HP', 'HT', 'Katarina D.', 'Lucija Ž', 'DJ', 'Ivan K', 'Ivana Paranus'
-];
-const COLLECTIVE_DAYS = ['2025-08-04', '2025-08-05', '2025-08-15'];
-const WEEKDAYS = ['P', 'U', 'S', 'Č', 'P', 'S', 'N'];
+let teamMembers = [];
+const COLLECTIVE_DAYS = ['2026-08-03', '2026-08-04', '2026-08-14']; // Assuming new collective dates for 2026
+
+let CREDENTIALS = { user: '', pass: '' };
+
+function getAuthHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': 'Basic ' + btoa(CREDENTIALS.user + ':' + CREDENTIALS.pass)
+  };
+}
 
 function isWeekend(date) {
   const d = new Date(date);
@@ -73,8 +79,12 @@ function showConfirmToast(message, onYes) {
 
 // Dohvati sve unose iz baze
 async function getLeaveEntries() {
-  const res = await fetch(SHEET_API_URL);
+  const res = await fetch(SHEET_API_URL, { headers: getAuthHeaders() });
   const data = JSON.parse(await res.text());
+  if (res.status === 401) {
+    showToast('Greška s autorizacijom!', 'error');
+    return [];
+  }
   // Prvi red su zaglavlja, ostalo su podaci
   return data.slice(1).map(row => {
     // Normaliziraj datum
@@ -99,7 +109,7 @@ async function addLeaveEntry(date, member) {
   await fetch(SHEET_API_URL, {
     method: 'POST',
     body: JSON.stringify({ date, member }),
-    headers: { 'Content-Type': 'application/json' }
+    headers: getAuthHeaders()
   });
 }
 
@@ -131,8 +141,13 @@ async function renderCalendar(month, year, containerId) {
   const tbody = document.createElement('tbody');
   let tr = document.createElement('tr');
   let dayOfWeek = (firstDay + 6) % 7; // Ponedjeljak = 0
+  let totalCellsRendered = 0;
+
   for (let i = 0; i < dayOfWeek; i++) {
-    tr.appendChild(document.createElement('td'));
+    const td = document.createElement('td');
+    td.style.border = 'none';
+    tr.appendChild(td);
+    totalCellsRendered++;
   }
   for (let day = 1; day <= days; day++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -148,26 +163,33 @@ async function renderCalendar(month, year, containerId) {
       const entriesForDate = entries.filter(e => e.date === dateStr);
       if (entriesForDate.length > 0) {
         entriesForDate.forEach(e => {
-          td.innerHTML += `<div class="entry">${e.member} <span class="delete-btn" data-date="${e.date}" data-member="${e.member}" style="color:red;cursor:pointer;">✖</span></div>`;
+          let deleteBtn = `<span class="delete-btn" data-date="${e.date}" data-member="${e.member}" style="color:red;cursor:pointer;margin-left:6px;" title="Obriši">✖</span>`;
+          td.innerHTML += `<div class="entry">${e.member} ${deleteBtn}</div>`;
         });
       } else {
         td.innerHTML += `<div class="free">Slobodno</div>`;
       }
     }
     tr.appendChild(td);
-    dayOfWeek++;
-    if (dayOfWeek === 7) {
+    totalCellsRendered++;
+    if (totalCellsRendered % 7 === 0) {
       tbody.appendChild(tr);
       tr = document.createElement('tr');
-      dayOfWeek = 0;
     }
   }
-  if (dayOfWeek !== 0) {
-    for (let i = dayOfWeek; i < 7; i++) {
-      tr.appendChild(document.createElement('td'));
+  
+  // Garantiramo visinu od točno 6 redova (42 kućice) za stabilnost prikaza
+  while (totalCellsRendered < 42) {
+    const td = document.createElement('td');
+    td.style.border = 'none';
+    tr.appendChild(td);
+    totalCellsRendered++;
+    if (totalCellsRendered % 7 === 0) {
+      tbody.appendChild(tr);
+      tr = document.createElement('tr');
     }
-    tbody.appendChild(tr);
   }
+  
   table.appendChild(tbody);
   container.appendChild(table);
 }
@@ -194,8 +216,8 @@ const months = [
   "Siječanj", "Veljača", "Ožujak", "Travanj", "Svibanj", "Lipanj",
   "Srpanj", "Kolovoz", "Rujan", "Listopad", "Studeni", "Prosinac"
 ];
-let currentMonth = 6; // 6 = Srpanj (0-based)
-let currentYear = 2025;
+let currentMonth = 0; // Starts from January in 2026
+let currentYear = 2026;
 
 async function renderSliderCalendar() {
   document.getElementById('calendarTitle').textContent = months[currentMonth] + " " + currentYear;
@@ -204,13 +226,13 @@ async function renderSliderCalendar() {
 }
 
 document.getElementById('prevMonth').onclick = function() {
-  if (currentMonth > 6) { // samo Srpanj i Kolovoz
+  if (currentMonth > 0) { // od siječnja
     currentMonth--;
     renderSliderCalendar();
   }
 };
 document.getElementById('nextMonth').onclick = function() {
-  if (currentMonth < 7) {
+  if (currentMonth < 11) { // do prosinca
     currentMonth++;
     renderSliderCalendar();
   }
@@ -256,7 +278,12 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
     const dateStr = d.toISOString().slice(0, 10);
     if (!isWeekend(dateStr) && !isCollective(dateStr)) {
       let entriesForDate = allEntries.filter(e => e.date === dateStr);
-      if (entriesForDate.length + members.length > 3) {
+      // Wait to evaluate duplicate entries
+      let newMembers = members.filter(m => !entriesForDate.some(e => e.member === m));
+      
+      const maxAllowed = Math.max(0, teamMembers.length - 2);
+
+      if (entriesForDate.length + newMembers.length > maxAllowed) {
         fullDates.push(dateStr);
       } else {
         for (const member of members) {
@@ -296,10 +323,10 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
 
   if (fullDates.length > 0) {
     showToast(
-      'Za sljedeće datume nije moguće dodati više osoba (maksimalno 3 po danu):\n' +
+      'Za sljedeće datume mora ostati barem 2 osobe raditi:\n' +
       fullDates.map(d => {
         const [y, m, day] = d.split('-');
-        return `Dan ${day}.${m}.${y}. je već zauzet sa previše osoba, odaberi druge datume.`;
+        return `Dan ${day}.${m}.${y}. je već zauzet prevelikim brojem ljudi, odaberi druge datume.`;
       }).join('\n'),
       "error"
     );
@@ -311,8 +338,8 @@ document.addEventListener('DOMContentLoaded', function() {
   flatpickr("#dateRange", {
     mode: "range",
     dateFormat: "Y-m-d",
-    minDate: "2025-07-01",
-    maxDate: "2025-08-31",
+    minDate: "2026-01-01", 
+    maxDate: "2026-12-31", 
     locale: {
       firstDayOfWeek: 1,
       weekdays: {
@@ -331,15 +358,20 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('click', async function(e) {
   if (e.target.classList.contains('delete-btn')) {
     showConfirmToast('Želiš li obrisati ovaj unos?', async () => {
-      await fetch(SHEET_API_URL, {
+      const res = await fetch(SHEET_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify({
           date: e.target.dataset.date,
           member: e.target.dataset.member,
           action: 'delete'
         })
       });
+      const data = await res.json();
+      if (res.status === 403) {
+         showToast(data.error, 'error');
+         return;
+      }
       await renderSliderCalendar();
       showToast('Unos je obrisan!', 'success');
     });
@@ -348,9 +380,9 @@ document.addEventListener('click', async function(e) {
 
 // Brisanje svih unosa
 document.getElementById('resetBtn').onclick = function() {
-  showConfirmToast('Želiš li obrisati SVE unose?', async () => {
+  showConfirmToast('Želiš li obrisati SVE unose iz baze?', async () => {
     showLoader();
-    await fetch(SHEET_API_URL, { method: 'DELETE' });
+    await fetch(SHEET_API_URL, { method: 'DELETE', headers: getAuthHeaders() });
     await renderSliderCalendar();
     hideLoader();
     showToast('Svi unosi su obrisani!', 'success');
@@ -366,8 +398,65 @@ $(document).ready(function() {
   });
 });
 
-// Prvo renderiranje
-renderSliderCalendar();
+// LOGIN LOGIKA
+document.getElementById('loginBtn').onclick = async function() {
+  const u = document.getElementById('loginUser').value;
+  const p = document.getElementById('loginPassword').value;
+  if (!u || !p) { showToast('Unesi korisničko ime i lozinku!', 'error'); return; }
+
+  CREDENTIALS.user = u;
+  CREDENTIALS.pass = p;
+
+  showLoader();
+  try {
+    // Check credentials by fetching users list or calendar
+    const resUsers = await fetch(SHEET_API_URL + "?action=users", {
+      headers: getAuthHeaders()
+    });
+    
+    if (resUsers.status === 401) {
+      hideLoader();
+      showToast('Pogrešna lozinka ili korisnik!', 'error');
+      // Reset
+      CREDENTIALS = { user: '', pass: '' };
+      return;
+    }
+    const dbUsers = await resUsers.json(); // Ovo sad vraća array objekata: [{username: '...', name: '...'}, ...]
+    teamMembers = dbUsers.map(userObj => userObj.name); // popunjavamo globalni niz samo display imenima
+    
+    // Nađi ulogiranog korisnika kako bismo mu ime prikazali u zaglavlju
+    const loggedInUserObj = dbUsers.find(userObj => userObj.username === u);
+    const loggedInDisplayName = loggedInUserObj ? loggedInUserObj.name : u;
+    
+    // Postavi pozdravnu poruku
+    document.getElementById('userGreeting').textContent = "Pozdrav, " + loggedInDisplayName + "!";
+
+    // Update select with real user true display names
+    const select = document.getElementById('memberSelect');
+    select.innerHTML = '';
+    teamMembers.forEach(member => {
+        const opt = document.createElement('option');
+        opt.value = member;
+        opt.textContent = member;
+        select.appendChild(opt);
+    });
+
+  } catch (err) {
+    hideLoader();
+    showToast('Greška u komunikaciji sa serverom.', 'error');
+    return;
+  }
+  
+  hideLoader();
+
+  // Uspješan login
+  document.getElementById('loginContainer').style.display = 'none';
+  document.getElementById('appContainer').style.display = 'block';
+
+  // Automatski odaberi korisnika u dropdownu ako postoji
+  if (teamMembers.includes(loggedInDisplayName)) {
+     $('#memberSelect').val([loggedInDisplayName]).trigger('change');
+  }
 
 document.getElementById('exportCsvBtn').onclick = async function() {
   const entries = await getLeaveEntries();

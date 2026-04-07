@@ -2,7 +2,7 @@
 <html lang="hr">
 <head>
   <meta charset="UTF-8">
-  <title>Kalendar Godišnjih 2025</title>
+  <title>Kalendar Godišnjih 2026</title>
 
 <link rel="stylesheet" href="style.css">
 
@@ -15,7 +15,14 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <body>
-  <div class="calendar-slider" style="display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+<!-- LOGIN OVERLAY -->
+<div id="loginContainer" style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;background:#f7f7fa;">
+  <div style="background:#fff;padding:40px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.1);text-align:center;width:300px;">
+    <h2 style="margin-top:0;color:#005d4e;">Prijava za Kalendar</h2>
+    <input type="text" id="loginUser" placeholder="Korisničko ime" autocomplete="username" style="width:100%;padding:12px;margin-bottom:15px;font-size:16px;border-radius:6px;border:1px solid #ccc;text-align:center;">        
+    <input type="password" id="loginPassword" placeholder="Lozinka" autocomplete="current-password" style="width:100%;padding:12px;margin-bottom:20px;font-size:16px;border-radius:6px;border:1px solid #ccc;box-sizing:border-box;text-align:center;">      
+    <button id="loginBtn" style="width:100%;padding:14px;font-size:18px;background:#005d4e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:bold;">Uđi</button>
+<div id="appContainer" style="display:none;">  <div id="userGreeting" style="text-align:center; font-size:22px; font-weight:bold; color:#005d4e; margin-top:20px; margin-bottom:10px;"></div>  <div class="calendar-slider" style="display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
   <button id="prevMonth" class="slider-arrow" aria-label="Prethodni mjesec">
     <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align:middle;"><polyline points="18 24 8 14 18 4"/></svg>
   </button>
@@ -36,13 +43,7 @@
   </div>
     <label for="memberSelect" style="width:100%;text-align:center;font-weight:500;">Osobe:</label>
 <select id="memberSelect" name="members" multiple="multiple" style="width:100%;">
-  <option value="HP">HP</option>
-  <option value="HT">HT</option>
-  <option value="Katarina D.">Katarina D.</option>
-  <option value="Lucija Ž">Lucija Ž</option>
-  <option value="DJ">DJ</option>
-  <option value="Ivan K">Ivan K</option>
-  <option value="Ivana Paranus">Ivana Paranus</option>
+  <!-- Popunjeno dinamički iz baze -->
 </select>
     <button type="submit">Dodaj</button>
   </form>
@@ -50,15 +51,16 @@
   <button id="exportCsvBtn" style="margin-top:20px;">Export u CSV</button>
 </div>
 <div id="loader" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:999;background:rgba(255,255,255,0.7);align-items:center;justify-content:center;">
-  <div style="font-size:32px;color:#1976d2;">Učitavanje...</div>
+  <div style="font-size:32px;color:#005d4e;">Učitavanje...</div>
 </div>
 <div id="summary" class="summary-section"></div>
 
-<div id="confirm-toast" style="display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;min-width:220px;padding:16px 32px;border-radius:8px;font-size:18px;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);text-align:center;background:#1976d2;">
+<div id="confirm-toast" style="display:none;position:fixed;bottom:30px;left:50%;transform:translateX(-50%);z-index:9999;min-width:220px;padding:16px 32px;border-radius:8px;font-size:18px;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.15);text-align:center;background:#005d4e;">
   <span id="confirm-toast-message"></span>
   <button id="confirm-yes" style="margin-left:16px;padding:4px 16px;">DA</button>
   <button id="confirm-no" style="margin-left:8px;padding:4px 16px;">NE</button>
 </div>
+</div> <!-- Zatvaramo appContainer -->
 
 <script src="main.js"></script>  
 </body>

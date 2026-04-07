@@ -1,0 +1,19 @@
+# Dependency direktoriji
+node_modules/
+
+# Vercel lokalni fajlovi
+.vercel/
+
+# Environment varijable (OVO NIKAKO NE SMIJE IĆI NA GITHUB)
+.env
+.env.local
+.env.*.local
+
+# npm i debug logovi
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generirani fajlovi
+.DS_Store
+Thumbs.db
