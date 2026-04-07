@@ -79,31 +79,41 @@ function showConfirmToast(message, onYes) {
 
 // Dohvati sve unose iz baze
 async function getLeaveEntries() {
-  const res = await fetch(SHEET_API_URL, { headers: getAuthHeaders() });
-  const data = JSON.parse(await res.text());
-  if (res.status === 401) {
-    showToast('Greška s autorizacijom!', 'error');
+  try {
+    const res = await fetch(SHEET_API_URL, { headers: getAuthHeaders() });        
+    if (res.status === 401) {
+      showToast('Greška s autorizacijom!', 'error');
+      return [];
+    }
+    const textData = await res.text();
+    const data = textData ? JSON.parse(textData) : [];
+    
+    if (!Array.isArray(data)) {
+        console.error("API did not return an array:", data);
+        return [];
+    }
+
+    // Prvi red su zaglavlja, ostalo su podaci
+    return data.slice(1).map(row => {
+      // Normaliziraj datum
+      let date = row[0];
+      if (date && date.length === 10 && date[4] === '-' && date[7] === '-') {     
+        // već je u formatu YYYY-MM-DD
+        return { date: date, member: row[1] };
+      }
+      // pokušaj parsirati i pretvoriti u YYYY-MM-DD
+      let d = new Date(date);
+      if (!isNaN(d)) {
+        let mm = String(d.getMonth() + 1).padStart(2, '0');
+        let dd = String(d.getDate()).padStart(2, '0');
+        return { date: `${d.getFullYear()}-${mm}-${dd}`, member: row[1] };        
+      }
+      return { date: date, member: row[1] };
+    });
+  } catch (err) {
+    console.error("Greška u getLeaveEntries:", err);
     return [];
   }
-  // Prvi red su zaglavlja, ostalo su podaci
-  return data.slice(1).map(row => {
-    // Normaliziraj datum
-    let date = row[0];
-    if (date && date.length === 10 && date[4] === '-' && date[7] === '-') {
-      // već je u formatu YYYY-MM-DD
-      return { date: date, member: row[1] };
-    }
-    // pokušaj parsirati i pretvoriti u YYYY-MM-DD
-    let d = new Date(date);
-    if (!isNaN(d)) {
-      let mm = String(d.getMonth() + 1).padStart(2, '0');
-      let dd = String(d.getDate()).padStart(2, '0');
-      return { date: `${d.getFullYear()}-${mm}-${dd}`, member: row[1] };
-    }
-    return { date: date, member: row[1] };
-  });
-}
-
 // Dodaj unos
 async function addLeaveEntry(date, member) {
   await fetch(SHEET_API_URL, {
@@ -163,7 +173,10 @@ async function renderCalendar(month, year, containerId) {
       const entriesForDate = entries.filter(e => e.date === dateStr);
       if (entriesForDate.length > 0) {
         entriesForDate.forEach(e => {
-          let deleteBtn = `<span class="delete-btn" data-date="${e.date}" data-member="${e.member}" style="color:red;cursor:pointer;margin-left:6px;" title="Obriši">✖</span>`;
+          let deleteBtn = '';
+          if (e.member === window.loggedInMember) {
+            deleteBtn = `<span class="delete-btn" data-date="${e.date}" data-member="${e.member}" style="color:red;cursor:pointer;margin-left:6px;" title="Obriši">✖</span>`;
+          }
           td.innerHTML += `<div class="entry">${e.member} ${deleteBtn}</div>`;
         });
       } else {
@@ -249,10 +262,10 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   let [dateFrom, dateTo] = dateRange.split(" to ");
   if (!dateTo) dateTo = dateFrom; // Ako je odabran samo jedan dan
 
-  const members = $('#memberSelect').val();
+  const members = [window.loggedInMember]; // Koristimo osobu koja je logirana!
 
-  if (!dateFrom || !dateTo || members.length === 0) {
-    showToast('Odaberi raspon datuma i barem jednu osobu!', "error");
+  if (!dateFrom || !dateTo || !window.loggedInMember) {
+    showToast('Odaberi raspon datuma!', "error");
     submitBtn.disabled = false;
     submitBtn.textContent = "Dodaj";
     return;
@@ -306,8 +319,7 @@ document.getElementById('leaveForm').onsubmit = async function(e) {
   await renderSliderCalendar();
   this.reset();
 
-  // Reset Select2 i flatpickr
-  $('#memberSelect').val(null).trigger('change');
+  // Reset flatpickr
   document.getElementById('dateRange')._flatpickr.clear();
 
   submitBtn.disabled = false;
@@ -357,6 +369,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Brisanje pojedinačnog unosa
 document.addEventListener('click', async function(e) {
   if (e.target.classList.contains('delete-btn')) {
+    if (e.target.dataset.member !== window.loggedInMember) {
+      showToast('Možeš obrisati samo svoj godišnji!', 'error');
+      return;
+    }
     showConfirmToast('Želiš li obrisati ovaj unos?', async () => {
       const res = await fetch(SHEET_API_URL, {
         method: 'POST',
@@ -378,25 +394,6 @@ document.addEventListener('click', async function(e) {
   }
 });
 
-// Brisanje svih unosa
-document.getElementById('resetBtn').onclick = function() {
-  showConfirmToast('Želiš li obrisati SVE unose iz baze?', async () => {
-    showLoader();
-    await fetch(SHEET_API_URL, { method: 'DELETE', headers: getAuthHeaders() });
-    await renderSliderCalendar();
-    hideLoader();
-    showToast('Svi unosi su obrisani!', 'success');
-  });
-};
-
-// Inicijalizacija Select2
-$(document).ready(function() {
-  $('#memberSelect').select2({
-    placeholder: "Odaberi osobe",
-    tags: true, // omogućuje unos novih imena kao tagova
-    allowClear: true
-  });
-});
 
 // LOGIN LOGIKA
 document.getElementById('loginBtn').onclick = async function() {
@@ -427,19 +424,10 @@ document.getElementById('loginBtn').onclick = async function() {
     // Nađi ulogiranog korisnika kako bismo mu ime prikazali u zaglavlju
     const loggedInUserObj = dbUsers.find(userObj => userObj.username === u);
     const loggedInDisplayName = loggedInUserObj ? loggedInUserObj.name : u;
+    window.loggedInMember = loggedInDisplayName;
     
     // Postavi pozdravnu poruku
     document.getElementById('userGreeting').textContent = "Pozdrav, " + loggedInDisplayName + "!";
-
-    // Update select with real user true display names
-    const select = document.getElementById('memberSelect');
-    select.innerHTML = '';
-    teamMembers.forEach(member => {
-        const opt = document.createElement('option');
-        opt.value = member;
-        opt.textContent = member;
-        select.appendChild(opt);
-    });
 
   } catch (err) {
     hideLoader();
@@ -452,11 +440,6 @@ document.getElementById('loginBtn').onclick = async function() {
   // Uspješan login
   document.getElementById('loginContainer').style.display = 'none';
   document.getElementById('appContainer').style.display = 'block';
-
-  // Automatski odaberi korisnika u dropdownu ako postoji
-  if (teamMembers.includes(loggedInDisplayName)) {
-     $('#memberSelect').val([loggedInDisplayName]).trigger('change');
-  }
 
   // Prvo renderiranje
   renderSliderCalendar();

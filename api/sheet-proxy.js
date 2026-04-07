@@ -83,7 +83,11 @@ export default async function handler(req, res) {
       return res.status(200).json(usersResult.rows);
     }
     const result = await pool.query('SELECT datum, osoba FROM godisnji');
-    const rows = result.rows.map(r => [r.datum.toISOString().slice(0, 10), r.osoba]);
+    const rows = result.rows.map(r => {
+      let d = r.datum;
+      let dateStr = (d instanceof Date) ? d.toISOString().slice(0, 10) : d;
+      return [dateStr, r.osoba];
+    });
     res.status(200).json([["Datum", "Osoba"], ...rows]);
     return;
   }
